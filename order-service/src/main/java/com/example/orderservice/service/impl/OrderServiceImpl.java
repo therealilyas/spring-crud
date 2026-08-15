@@ -7,26 +7,21 @@ import com.example.orderservice.entity.Order;
 import com.example.orderservice.exception.ResourceNotFoundException;
 import com.example.orderservice.repository.OrderRepository;
 import com.example.orderservice.service.OrderService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-
+import com.example.orderservice.client.UserClient;
 import java.util.List;
+
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final RestTemplate restTemplate;
-    private final String userServiceUrl;
+    private final UserClient userClient;
 
     public OrderServiceImpl(OrderRepository orderRepository,
-                            RestTemplate restTemplate,
-                            @Value("${user-service.url}") String userServiceUrl) {
+                            UserClient userClient) {
         this.orderRepository = orderRepository;
-        this.restTemplate = restTemplate;
-        this.userServiceUrl = userServiceUrl;
+        this.userClient = userClient;
     }
 
     @Override
@@ -73,15 +68,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void validateUser(Long userId) {
-        try {
-            restTemplate.getForObject(
-                    userServiceUrl + "/api/users/" + userId,
-                    UserResponse.class
-            );
-        } catch (RestClientException ex) {
-            throw new IllegalArgumentException(
-                    "Cannot create/update order because user " + userId + " does not exist");
-        }
+        userClient.getUser(userId);
     }
 
     private void apply(Order order, OrderRequest request) {
