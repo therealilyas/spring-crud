@@ -1,5 +1,6 @@
 package com.example.orderservice.service;
 
+import com.example.orderservice.client.UserClient;
 import com.example.orderservice.dto.OrderRequest;
 import com.example.orderservice.dto.OrderResponse;
 import com.example.orderservice.dto.UserResponse;
@@ -11,7 +12,7 @@ import com.example.orderservice.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.Mock;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -32,16 +33,17 @@ class OrderServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
-    @InjectMocks
+    @Mock
+    private UserClient userClient;  // ← ADD THIS MOCK
+
     private OrderServiceImpl orderService;
 
     @BeforeEach
     void setUp() {
-        // @InjectMocks cannot resolve @Value constructor arguments.
         orderService = new OrderServiceImpl(
                 orderRepository,
-                restTemplate,
-                "http://localhost:8081"
+                userClient,      // ← ADD THIS
+                restTemplate
         );
     }
 
@@ -62,27 +64,22 @@ class OrderServiceImplTest {
         Order saved = new Order(1L, 1L, "Laptop", 1,
                 new BigDecimal("1200.00"), OrderStatus.CREATED);
 
-        when(restTemplate.getForObject(
-                "http://localhost:8081/api/users/1",
-                UserResponse.class)).thenReturn(user);
+        // Mock UserClient instead of RestTemplate directly
+        doNothing().when(userClient).getUser(1L);
         when(orderRepository.save(any(Order.class))).thenReturn(saved);
 
         OrderResponse response = orderService.create(request());
 
         assertEquals(1L, response.getId());
-        verify(restTemplate).getForObject(
-                "http://localhost:8081/api/users/1",
-                UserResponse.class);
+        verify(userClient).getUser(1L);  // ← Changed to UserClient
         verify(orderRepository).save(any(Order.class));
     }
 
     @Test
     void create_shouldFailWhenUserServiceFails() {
-
-        when(restTemplate.getForObject(
-                "http://localhost:8081/api/users/1",
-                UserResponse.class))
-                .thenThrow(new RestClientException("connection failed"));
+        // Mock UserClient to throw exception
+        doThrow(new RestClientException("connection failed"))
+                .when(userClient).getUser(1L);
 
         assertThrows(IllegalArgumentException.class,
                 () -> orderService.create(request()));
@@ -123,9 +120,7 @@ class OrderServiceImplTest {
         Order existing = new Order(1L, 1L, "Old", 1,
                 new BigDecimal("500.00"), OrderStatus.CREATED);
 
-        when(restTemplate.getForObject(
-                "http://localhost:8081/api/users/1",
-                UserResponse.class)).thenReturn(new UserResponse());
+        doNothing().when(userClient).getUser(1L);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(orderRepository.save(any(Order.class))).thenReturn(existing);
 

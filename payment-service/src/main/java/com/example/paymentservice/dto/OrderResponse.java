@@ -1,4 +1,4 @@
-package com.example.orderservice.dto;
+package com.example.paymentservice.dto;
 
 import java.math.BigDecimal;
 
@@ -12,8 +12,7 @@ public class OrderResponse {
 
     public OrderResponse() {}
 
-    public OrderResponse(Long id, Long userId, String productName, Integer quantity,
-                         BigDecimal totalAmount, String status) {  // ← String parameter
+    public OrderResponse(Long id, Long userId, String productName, Integer quantity, BigDecimal totalAmount, String status) {
         this.id = id;
         this.userId = userId;
         this.productName = productName;
@@ -21,7 +20,6 @@ public class OrderResponse {
         this.totalAmount = totalAmount;
         this.status = status;
     }
-
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

@@ -2,26 +2,34 @@ package com.example.orderservice.service.impl;
 
 import com.example.orderservice.dto.OrderRequest;
 import com.example.orderservice.dto.OrderResponse;
-import com.example.orderservice.dto.UserResponse;
+import com.example.orderservice.dto.PaymentRequest;
+import com.example.orderservice.dto.PaymentResponse;
 import com.example.orderservice.entity.Order;
+import com.example.orderservice.entity.OrderStatus;
 import com.example.orderservice.exception.ResourceNotFoundException;
 import com.example.orderservice.repository.OrderRepository;
 import com.example.orderservice.service.OrderService;
-import org.springframework.stereotype.Service;
 import com.example.orderservice.client.UserClient;
-import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final UserClient userClient;
+    private final RestTemplate restTemplate;
+
+    private static final String PAYMENT_SERVICE_URL = "http://localhost:8083/api/payments/";
 
     public OrderServiceImpl(OrderRepository orderRepository,
-                            UserClient userClient) {
+                            UserClient userClient,
+                            RestTemplate restTemplate) {
         this.orderRepository = orderRepository;
         this.userClient = userClient;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -30,8 +38,31 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = new Order();
         apply(order, request);
+        Order savedOrder = orderRepository.save(order);
 
-        return toResponse(orderRepository.save(order));
+        try {
+            PaymentRequest paymentRequest = new PaymentRequest(
+                    savedOrder.getId(),
+                    savedOrder.getTotalAmount(),
+                    "CARD",
+                    "PENDING"
+            );
+
+            PaymentResponse payment = restTemplate.postForObject(
+                    PAYMENT_SERVICE_URL,
+                    paymentRequest,
+                    PaymentResponse.class
+            );
+
+            if (payment != null && "PAID".equals(payment.getStatus())) {
+                savedOrder.setStatus(OrderStatus.CONFIRMED);
+                orderRepository.save(savedOrder);
+            }
+        } catch (Exception e) {
+            System.err.println("Payment creation failed: " + e.getMessage());
+        }
+
+        return toResponse(savedOrder);
     }
 
     @Override
@@ -76,12 +107,18 @@ public class OrderServiceImpl implements OrderService {
         order.setProductName(request.getProductName());
         order.setQuantity(request.getQuantity());
         order.setTotalAmount(request.getTotalAmount());
+
         order.setStatus(request.getStatus());
     }
 
     private OrderResponse toResponse(Order order) {
-        return new OrderResponse(order.getId(), order.getUserId(),
-                order.getProductName(), order.getQuantity(),
-                order.getTotalAmount(), order.getStatus());
+        return new OrderResponse(
+                order.getId(),
+                order.getUserId(),
+                order.getProductName(),
+                order.getQuantity(),
+                order.getTotalAmount(),
+                order.getStatus().name()  );
+
     }
 }

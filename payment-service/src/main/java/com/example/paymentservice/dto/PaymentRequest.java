@@ -9,6 +9,9 @@ import java.math.BigDecimal;
 
 public class PaymentRequest {
 
+    @NotNull(message = "User ID is required")
+    private Long userId;
+
     @NotNull
     private Long orderId;
 
@@ -25,15 +28,51 @@ public class PaymentRequest {
     public PaymentRequest() {
     }
 
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
+    public PaymentRequest(Long userId, Long orderId, BigDecimal amount, PaymentMethod method, PaymentStatus status) {
+        this.userId = userId;
+        this.orderId = orderId;
+        this.amount = amount;
+        this.method = method;
+        this.status = status;
+    }
 
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public Long getUserId() {
+        return userId;
+    }
 
-    public PaymentMethod getMethod() { return method; }
-    public void setMethod(PaymentMethod method) { this.method = method; }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
-    public PaymentStatus getStatus() { return status; }
-    public void setStatus(PaymentStatus status) { this.status = status; }
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public PaymentMethod getMethod() {
+        return method;
+    }
+
+    public void setMethod(PaymentMethod method) {
+        this.method = method;
+    }
+
+    public PaymentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PaymentStatus status) {
+        this.status = status;
+    }
 }

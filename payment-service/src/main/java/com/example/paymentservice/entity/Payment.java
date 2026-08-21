@@ -11,6 +11,9 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)  // ← NEW
+    private Long userId;                         // ← NEW
+
     @Column(nullable = false)
     private Long orderId;
 
@@ -28,17 +31,22 @@ public class Payment {
     public Payment() {
     }
 
-    public Payment(Long id, Long orderId, BigDecimal amount,
+    public Payment(Long id, Long userId, Long orderId, BigDecimal amount,
                    PaymentMethod method, PaymentStatus status) {
         this.id = id;
+        this.userId = userId;
         this.orderId = orderId;
         this.amount = amount;
         this.method = method;
         this.status = status;
     }
 
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
