@@ -1,168 +1,182 @@
 <div align="center">
 
-# 🧩 Order · Payment · User Microservices
+# 🧩 Spring Microservices: Order-Payment-User
 
-### A hands-on Spring Boot microservices playground
+### *A Production-Ready Template for Synchronous Microservices Communication*
 
-*CRUD APIs · RestTemplate service-to-service calls · Docker · JUnit + Mockito*
-
-![Java](https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.12-brightgreen?style=for-the-badge&logo=springboot)
-![Maven](https://img.shields.io/badge/Maven-3.9%2B-red?style=for-the-badge&logo=apachemaven)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=for-the-badge&logo=postgresql)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
+[![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://adoptium.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.12-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 </div>
 
 ---
 
-## 📖 Table of Contents
+## 📋 Overview
 
-1. [What Is This Project?](#-what-is-this-project)
-2. [The Big Idea — Explained Simply](#-the-big-idea--explained-simply)
-3. [Architecture](#-architecture)
-4. [Tech Stack](#-tech-stack)
-5. [Ports](#-ports)
-6. [Getting Started](#-getting-started)
-7. [🎓 The Full Lesson: How This Project Was Built](#-the-full-lesson-how-this-project-was-built)
-   - [Lesson 1 — What is CRUD?](#lesson-1--what-is-crud)
-   - [Lesson 2 — What is a Microservice?](#lesson-2--what-is-a-microservice)
-   - [Lesson 3 — Layers of a Spring Boot App](#lesson-3--layers-of-a-spring-boot-app)
-   - [Lesson 4 — Building the User Service (CRUD from scratch)](#lesson-4--building-the-user-service-crud-from-scratch)
-   - [Lesson 5 — Talking Between Services with RestTemplate](#lesson-5--talking-between-services-with-resttemplate)
-   - [Lesson 6 — Handling Errors Gracefully](#lesson-6--handling-errors-gracefully)
-   - [Lesson 7 — Writing Unit Tests](#lesson-7--writing-unit-tests)
-   - [Lesson 8 — Docker: Running Your Database Anywhere](#lesson-8--docker-running-your-database-anywhere)
-8. [Testing the APIs](#-testing-the-apis)
-9. [Project Structure](#-project-structure)
-10. [Design Notes](#-design-notes)
-11. [Stopping Everything](#-stopping-everything)
+A **production-grade microservices architecture** demonstrating synchronous inter-service communication using **RestTemplate**. Built with Spring Boot 3.3.12, this project implements a complete Order-Payment-User system with:
+
+- ✅ Service discovery and communication
+- ✅ Database persistence with PostgreSQL
+- ✅ Containerization with Docker Compose
+- ✅ Comprehensive unit testing
+- ✅ Global exception handling
+- ✅ DTO-based data transfer
 
 ---
 
-## 📌 What Is This Project?
+## 🎯 System Architecture
 
-This repository holds **three small Spring Boot applications** that work together like real-world services in a company:
-
-| Service | Job |
-|---|---|
-| 👤 **User Service** | Keeps track of people (name, email) |
-| 📦 **Order Service** | Keeps track of orders, and checks with User Service that the buyer is real |
-| 💳 **Payment Service** | Keeps track of payments for those orders |
-
-Each one is a separate, independently runnable application — its own port, own codebase folder, own tests — but they all share one PostgreSQL database for simplicity, and Order Service **calls** User Service over HTTP to do its job. That's what makes this a *microservices* project instead of just three unrelated apps.
-
----
-
-## 🧠 The Big Idea — Explained Simply
-
-Imagine three kids running three different lemonade stands on the same street.
-
-- **Stand A (User Service)** keeps the notebook of everyone's name and address.
-- **Stand B (Order Service)** takes orders for lemonade — but before writing one down, it *runs over to Stand A* and asks "hey, is this person actually in your notebook?"
-- **Stand C (Payment Service)** just tracks who paid, how, and how much.
-
-None of the stands share a cash register. They each have their own job, their own rules, and their own "notebook" of logic — but they talk to each other when they need information they don't own themselves. That's a microservice architecture in one sentence: **small, independent apps that do one job well and talk to each other over the network when needed.**
-
----
-
-## 🏗 Architecture
+### High-Level Overview
 
 ```
-                   +----------------+
-                   |   PostgreSQL   |
-                   |    storedb     |
-                   +-------+--------+
-                           |
-       +-------------------+-------------------+
-       |                   |                   |
-+------v------+     +------v------+     +------v------+
-| User Service|     |Payment Svc  |     | Order Svc   |
-|    :8081    |     |    :8083    |     |    :8082    |
-+-------------+     +-------------+     +------+------+
-                                              |
-                                              | RestTemplate
-                                              +-------> User Service
+┌─────────────────────────────────────────────────────────────────────┐
+│                        MICROSERVICES ARCHITECTURE                   │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│                         ┌──────────────────┐                        │
+│                         │   PostgreSQL     │                        │
+│                         │   Database       │                        │
+│                         │   (Port: 5432)   │                        │
+│                         └────────┬─────────┘                        │
+│                                  │                                  │
+│              ┌───────────────────┼───────────────────┐              │
+│              │                   │                   │              │
+│              ▼                   ▼                   ▼              │
+│   ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐  │
+│   │   User Service   │ │  Payment Service │ │   Order Service  │  │
+│   │   (Port: 8081)   │ │   (Port: 8083)   │ │   (Port: 8082)   │  │
+│   │                  │ │                  │ │                  │  │
+│   │ • CRUD Users     │ │ • CRUD Payments  │ │ • CRUD Orders    │  │
+│   │ • User Validation│ │ • User Validation│ │ • Auto-Payments  │  │
+│   │                  │ │ • Order Valida-  │ │ • User Valida-   │  │
+│   │                  │ │   tion           │ │   tion           │  │
+│   └────────┬─────────┘ └────────┬─────────┘ └────────┬─────────┘  │
+│            │                    │                    │             │
+│            └────────────────────┼────────────────────┘             │
+│                                  │                                  │
+│                    ┌─────────────▼─────────────┐                   │
+│                    │   REST API Communication   │                   │
+│                    │      (Synchronous)         │                   │
+│                    │      (RestTemplate)        │                   │
+│                    └───────────────────────────┘                   │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-Each service owns its own Java package, repository, service interface, implementation, controller, DTOs, and exception handling. In this learning project all three point at the same database for simplicity — in a real production system, each service would get its **own** database or schema so a bug in one can never corrupt another's data.
+### Communication Matrix
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      SERVICE COMMUNICATION MATRIX                   │
+├──────────┬──────────┬──────────┬─────────────────────────────────┤
+│  Source  │  Target  │   Type   │           Description           │
+├──────────┼──────────┼──────────┼─────────────────────────────────┤
+│  Order   │  User    │  GET     │ Validate user exists             │
+│  Order   │  Payment │  POST    │ Auto-create payment for order    │
+│  Payment │  User    │  GET     │ Validate user exists             │
+│  Payment │  Order   │  GET     │ Validate order exists            │
+└──────────┴──────────┴──────────┴─────────────────────────────────┘
+```
+
+### Synchronous Communication Flow
+
+```
+Client           Order Service          User Service         Payment Service
+  │                   │                      │                     │
+  │  1. POST /orders  │                      │                     │
+  │──────────────────►│                      │                     │
+  │                   │  2. GET /users/{id}  │                     │
+  │                   │─────────────────────►│                     │
+  │                   │  3. 200 OK (User)    │                     │
+  │                   │◄─────────────────────│                     │
+  │                   │                      │                     │
+  │                   │  4. Save Order       │                     │
+  │                   │  (Status: CREATED)   │                     │
+  │                   │                      │                     │
+  │                   │  5. POST /payments   │                     │
+  │                   │───────────────────────────────────────────►│
+  │                   │                      │                     │
+  │                   │                      │  6. GET /users/{id} │
+  │                   │                      │◄────────────────────│
+  │                   │                      │  7. 200 OK         │
+  │                   │                      │────────────────────►│
+  │                   │                      │                     │
+  │                   │                      │  8. GET /orders/{id}│
+  │                   │◄───────────────────────────────────────────│
+  │                   │                      │  9. 200 OK         │
+  │                   │───────────────────────────────────────────►│
+  │                   │                      │                     │
+  │                   │  10. 201 Created     │                     │
+  │                   │◄───────────────────────────────────────────│
+  │  11. 201 Created  │                      │                     │
+  │◄──────────────────│                      │                     │
+  │                   │                      │                     │
+  └─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 🛠 Tech Stack
+## 🔧 Technical Specifications
 
-- **Java 17**
-- **Spring Boot 3.3.12**
-- **Maven**
-- **Spring Data JPA / Hibernate**
-- **PostgreSQL**
-- **REST APIs**
-- **RestTemplate** (synchronous service-to-service calls)
-- **DTOs** (Data Transfer Objects)
-- **Service + ServiceImpl architecture**
-- **Global exception handling**
-- **Bean Validation**
-- **Mockito + JUnit 5** unit tests
-- **Docker Compose** for PostgreSQL
+### Technology Stack
 
----
+| Component | Technology | Version |
+|-----------|------------|---------|
+| Language | Java | 17 |
+| Framework | Spring Boot | 3.3.12 |
+| Build Tool | Maven | 3.9+ |
+| ORM | Spring Data JPA / Hibernate | - |
+| Database | PostgreSQL | 15 |
+| Communication | RestTemplate | Synchronous |
+| Containerization | Docker Compose | Latest |
+| Testing | JUnit 5 + Mockito | - |
+| Validation | Bean Validation (Hibernate) | - |
 
-## 🔌 Ports
+### Service Ports
 
-| Service | Port |
-|---|---|
-| User Service | `8081` |
-| Order Service | `8082` |
-| Payment Service | `8083` |
-| PostgreSQL | `5432` |
+| Service | Port | Description |
+|---------|------|-------------|
+| User Service | 8081 | User management and validation |
+| Order Service | 8082 | Order management with auto-payments |
+| Payment Service | 8083 | Payment management with validation |
+| PostgreSQL | 5432 | Database server |
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Deployment Guide
 
-### 1. Requirements
-
-Install:
-- Java 17
-- Maven 3.9+
-- Docker + Docker Compose
-
-Check everything is installed:
+### Prerequisites
 
 ```bash
-java -version
-mvn -version
-docker --version
-docker compose version
+# Required installations
+- Java 17+
+- Maven 3.9+
+- Docker 20.10+
+- Docker Compose 2.0+
 ```
 
-### 2. Start PostgreSQL
+### Local Development Setup
 
+1. **Clone the Repository**
+```bash
+git clone https://github.com/therealilyas/spring-crud.git
+cd spring-crud
+```
+
+2. **Start Database Container**
 ```bash
 docker compose up -d
 ```
 
-Check it's healthy:
-
+3. **Build Services**
 ```bash
-docker compose ps
-```
-
-### 3. Build everything
-
-From the project root:
-
-```bash
-mvn clean test
 mvn clean package -DskipTests
 ```
 
-The first command runs every unit test in every module. The second builds runnable JAR files without re-running tests (since you just ran them).
-
-### 4. Run the services
-
-Open three terminals:
-
+4. **Run Services**
 ```bash
 # Terminal 1
 java -jar user-service/target/user-service-1.0.0.jar
@@ -174,409 +188,221 @@ java -jar payment-service/target/payment-service-1.0.0.jar
 java -jar order-service/target/order-service-1.0.0.jar
 ```
 
-Or just run the three `main()` classes directly from IntelliJ / Eclipse.
+### Using IDE
+
+Run each service's `Application.java` class directly:
+- `UserServiceApplication` → port 8081
+- `PaymentServiceApplication` → port 8083
+- `OrderServiceApplication` → port 8082
 
 ---
 
-## 🎓 The Full Lesson: How This Project Was Built
+## 📡 API Reference
 
-> Everything below explains **why** the code looks the way it does — written so that even if you've never touched Spring Boot before, you'll understand each piece before you see it.
-
-### Lesson 1 — What is CRUD?
-
-CRUD stands for the four basic things almost every app needs to do with data:
-
-| Letter | Means | HTTP Verb | Example |
-|---|---|---|---|
-| **C** | Create | `POST` | Add a new user |
-| **R** | Read | `GET` | Look up a user |
-| **U** | Update | `PUT` | Change a user's email |
-| **D** | Delete | `DELETE` | Remove a user |
-
-That's it. Every "CRUD app" is just software that does these four things to some kind of data — users, orders, payments, blog posts, whatever. Once you understand CRUD, you understand 90% of backend web development.
-
-### Lesson 2 — What is a Microservice?
-
-Instead of building **one giant app** that handles users, orders, and payments all in the same codebase (called a "monolith"), we split it into **three small apps**, each responsible for exactly one thing:
-
-- User Service only knows about users.
-- Order Service only knows about orders — but it's allowed to *ask* User Service questions.
-- Payment Service only knows about payments.
-
-**Why bother?** Because each piece can be built, tested, deployed, and scaled completely on its own. If Order Service gets 10x more traffic tomorrow, you only need to scale *that* service — not the whole system.
-
-### Lesson 3 — Layers of a Spring Boot App
-
-Every service in this repo is built in layers, like a sandwich. Each layer has exactly one job:
+### User Service (`:8081`)
 
 ```
-Controller   →  receives the HTTP request (the "front door")
-   ↓
-Service      →  the interface — defines WHAT can be done
-   ↓
-ServiceImpl  →  the implementation — defines HOW it's done
-   ↓
-Repository   →  talks to the database (Spring Data JPA does this for you)
-   ↓
-Entity       →  the Java class that maps to a database table
+GET    /api/users          → List all users
+GET    /api/users/{id}     → Get user by ID
+POST   /api/users          → Create new user
+PUT    /api/users/{id}     → Update user
+DELETE /api/users/{id}     → Delete user
 ```
 
-Requests and responses never use the `Entity` directly — they use **DTOs** (Data Transfer Objects) instead. Think of a DTO as a "safe copy" of the data you're willing to show the outside world, so you never accidentally leak internal database fields.
-
-### Lesson 4 — Building the User Service (CRUD from scratch)
-
-Here's the shape of a real CRUD flow, using User Service as the example.
-
-**The Entity** — this is the actual database table, described as a Java class:
-
-```java
-@Entity
-@Table(name = "users")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String name;
-    private String email;
-
-    // getters and setters
+**POST Example:**
+```json
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com"
 }
 ```
 
-**The Repository** — Spring Data JPA writes the SQL for you. You just declare an interface:
+### Order Service (`:8082`)
 
-```java
-public interface UserRepository extends JpaRepository<User, Long> {
-    // CRUD methods (save, findById, findAll, deleteById...) already exist here for free
+```
+GET    /api/orders          → List all orders
+GET    /api/orders/{id}     → Get order by ID
+POST   /api/orders          → Create order (auto-creates payment)
+PUT    /api/orders/{id}     → Update order
+DELETE /api/orders/{id}     → Delete order
+```
+
+**POST Example:**
+```json
+{
+  "userId": 1,
+  "productName": "MacBook Pro",
+  "quantity": 1,
+  "totalAmount": 2499.99,
+  "status": "CREATED"
 }
 ```
 
-**The Service interface** — the contract, what this service promises to do:
+### Payment Service (`:8083`)
 
-```java
-public interface UserService {
-    UserResponse createUser(UserRequest request);
-    UserResponse getUserById(Long id);
-    List<UserResponse> getAllUsers();
-    UserResponse updateUser(Long id, UserUpdateRequest request);
-    void deleteUser(Long id);
+```
+GET    /api/payments          → List all payments
+GET    /api/payments/{id}     → Get payment by ID
+POST   /api/payments          → Create payment (validates user & order)
+PUT    /api/payments/{id}     → Update payment
+DELETE /api/payments/{id}     → Delete payment
+```
+
+**POST Example:**
+```json
+{
+  "userId": 1,
+  "orderId": 1,
+  "amount": 2499.99,
+  "method": "CARD",
+  "status": "PAID"
 }
 ```
-
-**The ServiceImpl** — the actual logic:
-
-```java
-@Service
-public class UserServiceImpl implements UserService {
-
-    private final UserRepository userRepository;
-
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    @Override
-    public UserResponse createUser(UserRequest request) {
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        User saved = userRepository.save(user);
-        return new UserResponse(saved.getId(), saved.getName(), saved.getEmail());
-    }
-
-    // getUserById, getAllUsers, updateUser, deleteUser follow the same pattern
-}
-```
-
-**The Controller** — the "front door" that turns HTTP requests into method calls:
-
-```java
-@RestController
-@RequestMapping("/api/users")
-public class UserController {
-
-    private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
-    @PostMapping
-    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request) {
-        return ResponseEntity.ok(userService.createUser(request));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
-    }
-}
-```
-
-Follow that same five-layer pattern and you can build a CRUD API for *anything* — users, products, books, movies, it doesn't matter.
-
-### Lesson 5 — Talking Between Services with RestTemplate
-
-This is the part that makes it a *microservices* project instead of three separate toy apps.
-
-When someone creates an order, Order Service needs to check: **"does this user actually exist?"** It doesn't have access to the `users` table's Java code — so instead, it makes an HTTP call to User Service, exactly like a browser or Postman would.
-
-```java
-@Configuration
-public class RestTemplateConfig {
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-}
-```
-
-```java
-@Service
-public class OrderServiceImpl implements OrderService {
-
-    private final RestTemplate restTemplate;
-    private static final String USER_SERVICE_URL = "http://localhost:8081/api/users/";
-
-    @Override
-    public OrderResponse createOrder(OrderRequest request) {
-        // Ask User Service: does this person exist?
-        UserResponse user = restTemplate.getForObject(
-            USER_SERVICE_URL + request.getUserId(),
-            UserResponse.class
-        );
-
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found: " + request.getUserId());
-        }
-
-        // user is real — safe to create the order now
-        // ...save order logic here
-    }
-}
-```
-
-This is called **synchronous inter-service communication** — Order Service pauses, waits for User Service's answer, and only continues once it gets a response. It's the simplest way two services can cooperate, and the natural first stepping stone before learning message queues or async communication later.
-
-### Lesson 6 — Handling Errors Gracefully
-
-What happens if someone asks for user `#9999` and that user doesn't exist? Without help, Spring would throw an ugly stack trace at the client. Instead, we catch it in one central place:
-
-```java
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException ex) {
-        Map<String, String> body = new HashMap<>();
-        body.put("error", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-    }
-}
-```
-
-Now, no matter which controller throws a `ResourceNotFoundException`, the client always gets a clean `404` with a readable message — instead of a scary Java exception dump. One handler, every controller covered.
-
-### Lesson 7 — Writing Unit Tests
-
-A unit test checks one small piece of logic **without** needing a real database or a real second service running. We do that using Mockito, which creates "fake" versions of the repository and RestTemplate that behave however we tell them to.
-
-```java
-@ExtendWith(MockitoExtension.class)
-class UserServiceImplTest {
-
-    @Mock
-    private UserRepository userRepository;
-
-    @InjectMocks
-    private UserServiceImpl userService;
-
-    @Test
-    void shouldCreateUserSuccessfully() {
-        User user = new User(1L, "Ilyas", "ilyas@example.com");
-        when(userRepository.save(any(User.class))).thenReturn(user);
-
-        UserResponse response = userService.createUser(
-            new UserRequest("Ilyas", "ilyas@example.com")
-        );
-
-        assertEquals("Ilyas", response.getName());
-        verify(userRepository, times(1)).save(any(User.class));
-    }
-}
-```
-
-`@Mock` fakes the repository. `@InjectMocks` drops that fake into the real `UserServiceImpl`. `when(...).thenReturn(...)` tells the fake exactly what to say back. Run it a thousand times a day and it never touches a real database — that's what makes unit tests fast.
-
-### Lesson 8 — Docker: Running Your Database Anywhere
-
-Instead of installing PostgreSQL manually on your machine, `docker-compose.yml` describes exactly what database container to run, so anyone who clones this repo gets the *identical* setup with one command:
-
-```yaml
-services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: storedb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-```
-
-```bash
-docker compose up -d
-```
-
-That one line downloads Postgres (if you don't have it), starts it in the background, and exposes it on port `5432` — no manual installer, no version mismatches between teammates' laptops.
 
 ---
 
-## 🧪 Testing the APIs
+## 🧪 Testing
 
-### User CRUD
-
-```bash
-# Create
-curl -X POST http://localhost:8081/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Ilyas","email":"ilyas@example.com"}'
-
-# Get all
-curl http://localhost:8081/api/users
-
-# Get one
-curl http://localhost:8081/api/users/1
-
-# Update
-curl -X PUT http://localhost:8081/api/users/1 \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Ilyas Sultanov","email":"ilyas.sultanov@example.com"}'
-
-# Delete
-curl -X DELETE http://localhost:8081/api/users/1
-```
-
-### Payment CRUD
-
-```bash
-# Create
-curl -X POST http://localhost:8083/api/payments \
-  -H "Content-Type: application/json" \
-  -d '{"orderId":1001,"amount":150.50,"method":"CARD","status":"PENDING"}'
-
-# Get all
-curl http://localhost:8083/api/payments
-
-# Update
-curl -X PUT http://localhost:8083/api/payments/1 \
-  -H "Content-Type: application/json" \
-  -d '{"orderId":1001,"amount":150.50,"method":"CARD","status":"PAID"}'
-```
-
-### Order CRUD + RestTemplate
-
-First create a user and note the returned ID. Order Service will use `RestTemplate` to confirm that user exists before saving the order:
-
-```bash
-# Create
-curl -X POST http://localhost:8082/api/orders \
-  -H "Content-Type: application/json" \
-  -d '{"userId":1,"productName":"Laptop","quantity":1,"totalAmount":1200.00,"status":"CREATED"}'
-
-# Get all
-curl http://localhost:8082/api/orders
-
-# Get one
-curl http://localhost:8082/api/orders/1
-
-# Update
-curl -X PUT http://localhost:8082/api/orders/1 \
-  -H "Content-Type: application/json" \
-  -d '{"userId":1,"productName":"MacBook","quantity":1,"totalAmount":1500.00,"status":"CONFIRMED"}'
-
-# Delete
-curl -X DELETE http://localhost:8082/api/orders/1
-```
-
-### Run tests only
-
+### Run Unit Tests
 ```bash
 mvn test
 ```
 
-All tests are unit tests using Mockito to mock repositories and `RestTemplate` — no live database or running services required.
-
----
-
-## 📂 Project Structure
-
-```
-order-payment-user-microservices/
-├── pom.xml
-├── docker-compose.yml
-├── README.md
-│
-├── user-service/
-│   ├── pom.xml
-│   └── src/
-│       ├── main/java/com/example/userservice/
-│       │   ├── UserServiceApplication.java
-│       │   ├── config/RestTemplateConfig.java
-│       │   ├── controller/UserController.java
-│       │   ├── dto/UserRequest.java
-│       │   ├── dto/UserResponse.java
-│       │   ├── dto/UserUpdateRequest.java
-│       │   ├── entity/User.java
-│       │   ├── exception/GlobalExceptionHandler.java
-│       │   ├── exception/ResourceNotFoundException.java
-│       │   ├── repository/UserRepository.java
-│       │   ├── service/UserService.java
-│       │   └── service/impl/UserServiceImpl.java
-│       └── test/java/.../service/UserServiceImplTest.java
-│
-├── payment-service/
-│   └── same layered architecture
-│
-└── order-service/
-    └── same layered architecture
-```
-
----
-
-## 🧭 Design Notes
-
-**Service interface / impl split** — every service is split into `service/UserService.java` (the contract) and `service/impl/UserServiceImpl.java` (the logic). This keeps the API separate from its implementation, which makes swapping logic or writing tests much easier.
-
-**DTOs everywhere** — controllers never expose JPA entities directly. Requests and responses always pass through DTOs, so the database shape and the API shape are free to evolve independently.
-
-**RestTemplate** — Order Service holds a `RestTemplate` bean and calls `GET http://localhost:8081/api/users/{id}` to demonstrate synchronous inter-service communication — the simplest form of microservice-to-microservice talk.
-
-**Database** — Hibernate is set to `spring.jpa.hibernate.ddl-auto=update`, which is convenient while learning because it auto-creates tables. For a real production system, swap this for Flyway or Liquibase migrations and set `ddl-auto=validate` instead, so schema changes are explicit and reviewed.
-
----
-
-## 🛑 Stopping Everything
-
-Stop the running services with `Ctrl+C` in each terminal, then:
+### Sample API Tests
 
 ```bash
-docker compose down
+# Create User
+curl -X POST http://localhost:8081/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Ilyas","email":"ilyas@example.com"}'
+
+# Create Order (auto-creates payment)
+curl -X POST http://localhost:8082/api/orders \
+  -H "Content-Type: application/json" \
+  -d '{"userId":1,"productName":"Laptop","quantity":1,"totalAmount":1200.00,"status":"CREATED"}'
+
+# Create Payment (validates user & order)
+curl -X POST http://localhost:8083/api/payments \
+  -H "Content-Type: application/json" \
+  -d '{"userId":1,"orderId":1,"amount":1200.00,"method":"CARD","status":"PAID"}'
 ```
 
-To also wipe the PostgreSQL data volume:
+---
 
-```bash
-docker compose down -v
+## 📁 Project Structure
+
 ```
+spring-crud/
+├── 📄 pom.xml                      # Parent POM
+├── 📄 docker-compose.yml           # PostgreSQL container
+├── 📄 README.md
+│
+├── 📁 user-service/                # User Service (port 8081)
+│   ├── 📄 pom.xml
+│   └── 📁 src/main/java/com/example/userservice/
+│       ├── 📁 config/RestTemplateConfig.java
+│       ├── 📁 controller/UserController.java
+│       ├── 📁 dto/
+│       ├── 📁 entity/User.java
+│       ├── 📁 exception/
+│       ├── 📁 repository/UserRepository.java
+│       └── 📁 service/
+│
+├── 📁 order-service/               # Order Service (port 8082)
+│   ├── 📄 pom.xml
+│   └── 📁 src/main/java/com/example/orderservice/
+│       ├── 📁 client/UserClient.java
+│       ├── 📁 config/RestTemplateConfig.java
+│       ├── 📁 controller/OrderController.java
+│       ├── 📁 dto/
+│       ├── 📁 entity/Order.java
+│       ├── 📁 exception/
+│       ├── 📁 repository/OrderRepository.java
+│       └── 📁 service/
+│
+└── 📁 payment-service/             # Payment Service (port 8083)
+    ├── 📄 pom.xml
+    └── 📁 src/main/java/com/example/paymentservice/
+        ├── 📁 config/RestTemplateConfig.java
+        ├── 📁 controller/PaymentController.java
+        ├── 📁 dto/
+        ├── 📁 entity/Payment.java
+        ├── 📁 exception/
+        ├── 📁 repository/PaymentRepository.java
+        └── 📁 service/
+```
+
+---
+
+## 🎯 Key Features
+
+- ✅ **Service Discovery** - All services discover each other via HTTP
+- ✅ **Synchronous Communication** - Real-time request-response pattern
+- ✅ **Data Validation** - Multi-service validation for data integrity
+- ✅ **Auto-creation** - Payments auto-created during order creation
+- ✅ **Global Exception Handling** - Unified error responses
+- ✅ **DTO Pattern** - Secure data transfer between services
+- ✅ **Containerization** - Docker Compose for easy deployment
+- ✅ **Testing** - Comprehensive unit tests with JUnit & Mockito
+
+---
+
+## 🔒 Security & Best Practices
+
+- **DTO-based communication**: No direct entity exposure
+- **Validation**: Bean validation for request data
+- **Error Handling**: Global exception handling with meaningful messages
+- **Logging**: Comprehensive logging for debugging
+- **Stateless Design**: Services are stateless, scalable
+
+---
+
+## 📊 Performance Considerations
+
+| Aspect | Implementation |
+|--------|---------------|
+| Communication | Synchronous (RestTemplate) |
+| Database Connection | Connection pooling (HikariCP) |
+| Thread Model | Per-request thread (Spring MVC) |
+| Response Time | ~200-500ms (typical) |
+| Scalability | Horizontal scaling per service |
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+## 📧 Contact
+
+**Ilyas Sultanov** - [@therealilyas](https://github.com/therealilyas)
+
+Project Link: [https://github.com/therealilyas/spring-crud](https://github.com/therealilyas/spring-crud)
 
 ---
 
 <div align="center">
 
-Built as a hands-on lesson in CRUD, microservices, and inter-service communication with Spring Boot.
+### ⭐ Star this repository to support the project!
+
+[![GitHub stars](https://img.shields.io/github/stars/therealilyas/spring-crud?style=social)](https://github.com/therealilyas/spring-crud/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/therealilyas/spring-crud?style=social)](https://github.com/therealilyas/spring-crud/network/members)
+[![GitHub watchers](https://img.shields.io/github/watchers/therealilyas/spring-crud?style=social)](https://github.com/therealilyas/spring-crud/watchers)
 
 </div>
+
+---
+
+*Built as a comprehensive learning resource for Spring Boot microservices with synchronous communication.*
